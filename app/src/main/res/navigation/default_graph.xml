@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/default_graph"
+    app:startDestination="@id/benchFragment">
+
+
+    <fragment
+        android:id="@+id/benchFragment"
+        android:name="com.victorrendina.labbench.bench.BenchFragment"
+        android:label="BenchFragment"
+        tools:layout="@layout/fragment_bench">
+        <action
+            android:id="@+id/action_benchFragment_to_counterFragment"
+            app:destination="@id/counterFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/counterFragment"
+        android:name="com.victorrendina.labbench.experiments.counter.CounterFragment"
+        android:label="CounterFragment"
+        tools:layout="@layout/fragment_counter" />
+</navigation>
