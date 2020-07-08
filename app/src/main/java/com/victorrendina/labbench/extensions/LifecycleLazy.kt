@@ -1,9 +1,6 @@
 package com.victorrendina.labbench.extensions
 
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.*
 import java.io.Serializable
 
 @Suppress("ClassName")
@@ -12,16 +9,15 @@ private object UNINITIALIZED_VALUE
 /**
  * This was copied from SynchronizedLazyImpl but modified to automatically initialize in ON_CREATE.
  */
-class LifecycleLazy<out T>(private val owner: LifecycleOwner, initializer: () -> T) : Lazy<T>, Serializable {
+class LifecycleLazy<out T>(owner: LifecycleOwner, initializer: () -> T) : Lazy<T>, Serializable {
     private var initializer: (() -> T)? = initializer
     @Volatile private var _value: Any? = UNINITIALIZED_VALUE
     // final field is required to enable safe publication of constructed instance
     private val lock = this
 
     init {
-        owner.lifecycle.addObserver(object : LifecycleObserver {
-            @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-            fun onStart() {
+        owner.lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onCreate(owner: LifecycleOwner) {
                 if (!isInitialized()) value
                 owner.lifecycle.removeObserver(this)
             }

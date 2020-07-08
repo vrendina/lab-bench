@@ -8,6 +8,8 @@ import com.victorrendina.core.Success
 import com.victorrendina.domain.interactor.RetrieveCount
 import com.victorrendina.domain.interactor.SaveCount
 import com.victorrendina.labbench.LabViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 
 class CounterViewModel @AssistedInject constructor(
@@ -16,6 +18,9 @@ class CounterViewModel @AssistedInject constructor(
     private val retrieveCount: RetrieveCount,
     private val log: Logger
 ) : LabViewModel<CounterViewState>(initialState) {
+
+    private val _messages = Channel<Any>(Channel.UNLIMITED)
+    val messages get() = _messages.consumeAsFlow()
 
     init {
         if (!initialState.restored) {
@@ -33,6 +38,7 @@ class CounterViewModel @AssistedInject constructor(
 
     fun increment() {
         updateState {
+            _messages.offer("Updating count to ${count + 1}")
             copy(count = count + 1)
         }
     }
