@@ -7,16 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.core.view.isGone
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.victorrendina.core.Logger
 import com.victorrendina.labbench.*
 import com.victorrendina.labbench.databinding.FragmentCounterBinding
 import com.victorrendina.labbench.extensions.viewBinding
 import com.victorrendina.labbench.extensions.viewModel
-import kotlinx.coroutines.channels.consume
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class CounterFragment : LabFragment() {
@@ -38,6 +35,10 @@ class CounterFragment : LabFragment() {
         super.onAttach(context)
     }
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return FragmentCounterBinding.inflate(inflater, container, false).root
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -57,22 +58,41 @@ class CounterFragment : LabFragment() {
             viewModel.save()
         }
 
-        viewModel.messages.observe {
+        viewModel.messages.collectLifecycle {
             log.d("Received message $it")
         }
 
-        viewModel.state.map { it.loading }.distinctUntilChanged().observe { loading ->
+        viewModel.state.collectLifecycle { state ->
+            log.d("Received state update: $state")
+
+            binding.content.isGone = state.loading
+            binding.count.text = state.count.toString()
+            binding.restored.text = if (state.restored) getString(R.string.restored) else ""
+        }
+
+//        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+//            viewModel.state.collect { state ->
+//                log.d("Received state update: $state")
+//
+//                binding.content.isGone = state.loading
+//                binding.count.text = state.count.toString()
+//                binding.restored.text = if (state.restored) getString(R.string.restored) else ""
+//            }
+//        }
+
+        viewModel.state.map { it.loading }.distinctUntilChanged().collectLifecycle { loading ->
+            log.d("Received loading update")
             if (loading) binding.progressBar.show() else binding.progressBar.hide()
         }
 
-        viewModel.state
-            .onEach { state ->
-                log.d("Received state update: $state")
-
-                binding.content.isGone = state.loading
-                binding.count.text = state.count.toString()
-                binding.restored.text = if (state.restored) getString(R.string.restored) else ""
-            }.launchIn(viewLifecycleOwner.lifecycleScope)
+//        viewModel.state
+//            .onEach { state ->
+//                log.d("Received state update: $state")
+//
+//                binding.content.isGone = state.loading
+//                binding.count.text = state.count.toString()
+//                binding.restored.text = if (state.restored) getString(R.string.restored) else ""
+//            }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
 

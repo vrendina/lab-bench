@@ -8,7 +8,7 @@ import androidx.navigation.fragment.findNavController
 import com.victorrendina.labbench.LabViewModel
 import kotlin.reflect.KClass
 
-inline fun <reified VM : LabViewModel<*>> Fragment.viewModel(
+inline fun <reified VM : LabViewModel<*, *>> Fragment.viewModel(
     viewModelClass: KClass<VM> = VM::class,
     crossinline keyFactory: () -> String = { viewModelClass.java.name },
     crossinline factory: (savedState: Bundle?) -> VM
@@ -16,7 +16,6 @@ inline fun <reified VM : LabViewModel<*>> Fragment.viewModel(
     val key = keyFactory()
     val savedState = savedStateRegistry.consumeRestoredStateForKey(key)
     val wrapper = FactoryWrapper { factory(savedState) }
-
 
     val viewModel = ViewModelProvider(this, wrapper).get(key, viewModelClass.java)
     savedStateRegistry.registerSavedStateProvider(key, viewModel)
